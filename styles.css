@@ -48,6 +48,10 @@ body::before {
 }
 
 .hero {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 28px;
   margin-bottom: 22px;
 }
 
@@ -287,13 +291,13 @@ h2 {
 }
 
 .arrow-line-gold {
-  stroke: rgba(214, 178, 118, 0.97);
-  stroke-width: 19;
+  stroke: rgba(232, 197, 132, 0.98);
+  stroke-width: 28;
   stroke-linecap: round;
 }
 
 .arrow-head-gold {
-  fill: rgba(214, 178, 118, 0.98);
+  fill: rgba(232, 197, 132, 0.99);
 }
 
 
@@ -589,4 +593,91 @@ details p {
 
 .notes .model-grid article {
   background: rgba(255, 252, 242, 0.62);
+}
+
+
+.stat-detail {
+  margin: 3px 0 0;
+  color: rgba(109, 102, 79, 0.82);
+  font-size: 0.78rem;
+  font-weight: 800;
+  line-height: 1.15;
+  font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.swirl-alert {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  margin: -4px 0 14px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(192, 150, 88, 0.2);
+  color: var(--ivy);
+  font-size: 0.8rem;
+  font-weight: 800;
+  line-height: 1.2;
+  font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.swirl-alert[hidden] {
+  display: none;
+}
+
+
+.scoreboard-clock {
+  flex: 0 0 auto;
+  display: flex;
+  justify-content: flex-end;
+  align-items: flex-start;
+  margin-top: 2px;
+}
+
+.wrigley-clock-svg {
+  display: block;
+  width: clamp(106px, 11vw, 176px);
+  height: auto;
+  overflow: visible;
+  filter: drop-shadow(0 14px 28px rgba(0, 0, 0, 0.22));
+}
+
+.clock-outer {
+  fill: #0b5f40;
+  stroke: #0a4a33;
+  stroke-width: 8;
+}
+
+.clock-inner-ring {
+  fill: none;
+  stroke: rgba(247, 240, 222, 0.98);
+  stroke-width: 7;
+}
+
+.clock-dots circle,
+.clock-hour-hand path,
+.clock-minute-hand path {
+  fill: rgba(247, 240, 222, 0.98);
+}
+
+.clock-minute-hand circle {
+  stroke: rgba(247, 240, 222, 0.98);
+}
+
+.clock-center {
+  fill: #123f85;
+}
+
+@media (max-width: 760px) {
+  .hero {
+    flex-direction: row;
+    align-items: flex-start;
+  }
+
+  .scoreboard-clock {
+    margin-top: 4px;
+  }
+
+  .wrigley-clock-svg {
+    width: 94px;
+  }
 }

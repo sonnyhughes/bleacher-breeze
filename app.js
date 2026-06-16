@@ -1,6 +1,6 @@
 const WRIGLEY = {
-  latitude: 41.9484,
-  longitude: -87.6553,
+  latitude: 41.9481,
+  longitude: -87.6557,
   centerFieldBearing: 50
 };
 
@@ -10,7 +10,10 @@ const BASELINE_TEMP_F = 70;
 const BASELINE_RH = 50;
 const BASELINE_PRESSURE_INHG = 29.92;
 const BASELINE_WIND_FEET_PER_MPH = 3.75;
+const AVERAGE_AIRFLOW_ATTENUATION = 0.35;
+const HEADWIND_ASYMMETRY = 1.2;
 const CROSSWIND_FEET_PER_MPH = 0.75;
+const SWIRL_ALERT_MPH = 15;
 
 const weatherCodeText = {
   0: "Clear",
@@ -36,14 +39,18 @@ const weatherCodeText = {
 
 const els = {
   refreshButton: document.querySelector("#refreshButton"),
+  clockHourHand: document.querySelector("#clockHourHand"),
+  clockMinuteHand: document.querySelector("#clockMinuteHand"),
   updatedText: document.querySelector("#updatedText"),
   windLabel: document.querySelector("#windLabel"),
   windDirectionDetail: document.querySelector("#windDirectionDetail"),
+  swirlAlert: document.querySelector("#swirlAlert"),
   windValue: document.querySelector("#windValue"),
   gustValue: document.querySelector("#gustValue"),
   tempValue: document.querySelector("#tempValue"),
   airFeelValue: document.querySelector("#airFeelValue"),
   carryBadge: document.querySelector("#carryBadge"),
+  carryDetail: document.querySelector("#carryDetail"),
   crossBadge: document.querySelector("#crossBadge"),
   tempChart: document.querySelector("#tempChart"),
   speedChart: document.querySelector("#speedChart"),
@@ -160,21 +167,33 @@ function windCarryFactor(tempF, relativeHumidity, pressureHpa) {
   return BASELINE_WIND_FEET_PER_MPH;
 }
 
-function estimatedCarryFeet(component, windFactor) {
+function estimatedPeakCarryFeet(component, windFactor) {
   return Math.round(component * windFactor);
+}
+
+function estimatedAverageCarryFeet(component, windFactor) {
+  const directionModifier = component < 0 ? HEADWIND_ASYMMETRY : 1;
+  return Math.round(component * windFactor * AVERAGE_AIRFLOW_ATTENUATION * directionModifier);
 }
 
 function estimatedCrossFeet(component) {
   return Math.round(component * CROSSWIND_FEET_PER_MPH);
 }
 
-function summarizeCarry(outComponent, windFactor) {
-  const feet = estimatedCarryFeet(outComponent, windFactor);
+function formatFeet(feet, neutralLabel) {
   const absFeet = Math.abs(feet);
 
-  if (absFeet < 3) return "Neutral";
+  if (absFeet < 1) return neutralLabel;
   if (feet > 0) return `+${absFeet} ft`;
   return `−${absFeet} ft`;
+}
+
+function summarizeCarry(outComponent, windFactor) {
+  return formatFeet(estimatedAverageCarryFeet(outComponent, windFactor), "Neutral");
+}
+
+function summarizePeakCarry(outComponent, windFactor) {
+  return formatFeet(estimatedPeakCarryFeet(outComponent, windFactor), "Max HR neutral");
 }
 
 function summarizeCross(crossComponent) {
@@ -242,7 +261,9 @@ function renderCurrent(current) {
   els.tempValue.textContent = `${temp}°`;
   els.airFeelValue.textContent = airDensity;
   els.carryBadge.textContent = summarizeCarry(classification.outComponent, windFactor);
+  els.carryDetail.textContent = `Max HR potential ${summarizePeakCarry(classification.outComponent, windFactor)}`;
   els.crossBadge.textContent = summarizeCross(classification.crossComponent);
+  els.swirlAlert.hidden = Math.max(speed, gusts || 0) < SWIRL_ALERT_MPH;
   els.updatedText.textContent = `Updated ${formatUpdated()}`;
   setArrow(classification.windTo);
 }
@@ -329,6 +350,28 @@ function renderCharts(hourly) {
   els.gustChart.innerHTML = chartSvg({ values: gusts, labels, unit: " mph", minOverride: 0 });
 }
 
+function updateScoreboardClock() {
+  const now = new Date();
+  const chicagoParts = new Intl.DateTimeFormat("en-US", {
+    timeZone: "America/Chicago",
+    hour: "numeric",
+    minute: "numeric",
+    hour12: false
+  }).formatToParts(now);
+
+  const hourPart = chicagoParts.find((part) => part.type === "hour");
+  const minutePart = chicagoParts.find((part) => part.type === "minute");
+
+  const hours = Number(hourPart?.value || 0);
+  const minutes = Number(minutePart?.value || 0);
+
+  const hourDegrees = ((hours % 12) * 30) + (minutes * 0.5);
+  const minuteDegrees = minutes * 6;
+
+  els.clockHourHand.setAttribute("transform", `rotate(${hourDegrees} 100 100)`);
+  els.clockMinuteHand.setAttribute("transform", `rotate(${minuteDegrees} 100 100)`);
+}
+
 async function loadWeather() {
   els.refreshButton.disabled = true;
   els.refreshButton.textContent = "Refreshing…";
@@ -348,6 +391,7 @@ async function loadWeather() {
     els.updatedText.textContent = "Unable to load weather";
     els.windLabel.textContent = "Try again";
   els.windDirectionDetail.textContent = "Unable to read wind direction";
+  els.swirlAlert.hidden = true;
     els.windValue.textContent = "--";
     els.gustValue.textContent = "--";
     els.tempValue.textContent = "--";
@@ -364,5 +408,7 @@ async function loadWeather() {
 }
 
 els.refreshButton.addEventListener("click", loadWeather);
+updateScoreboardClock();
+setInterval(updateScoreboardClock, 30 * 1000);
 loadWeather();
 setInterval(loadWeather, REFRESH_INTERVAL_MS);

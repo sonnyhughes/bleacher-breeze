@@ -215,3 +215,54 @@ The **How this works** section now appears below the forecast trends instead of 
 ## How this works details placement
 
 The **How this works** content now lives inside `body > main > section.notes > details`, instead of as a standalone section below it.
+
+
+## Updated Wrigley coordinates
+
+Weather lookups now use the refined Wrigley Field coordinates:
+
+- Latitude: **41.9481**
+- Longitude: **-87.6557**
+
+
+## Blended carry model
+
+The main Carry card now uses a public-facing blended model:
+
+- Physics baseline: `wind component × dynamic wind factor` where the factor is centered on **3.75 ft/mph**
+- Public display: baseline × **0.35 aggregate airflow attenuation**
+- Headwind drag: inward carry uses a **1.2x** direction modifier
+- Max HR potential: shown as the smaller unattenuated line beneath Carry
+- Swirl alert: shown when wind or gusts are **15 mph or higher**
+
+
+## Single lighter fatter arrow
+
+This version returns to a single map arrow, using a slightly lighter champagne-gold color and a fatter stroke for better visibility.
+
+
+## Bigger single arrow
+
+This version keeps the single lighter champagne-gold arrow and scales it up for stronger visibility over the Wrigley image.
+
+
+## Fixed SVG favicon-style clock
+
+The clock is now an inline SVG placed in the top-right hero area. The hands rotate mechanically around the true center point using SVG transforms, so the geometry stays aligned while showing Chicago local time.
+
+
+## Refined SVG clock
+
+The hero clock is now slightly larger, with a cleaner geometric treatment:
+- thinner hour hand
+- matching hand thickness between hour and minute
+- removed the extra square blocks from both hands
+- removed the circular detail from the minute hand
+
+
+## Final clock thinning tweak
+
+The Wrigley hero clock was refined one more time:
+- hour and minute hands are both thinner
+- the hands feel less blocky overall
+- the 12 marker dots are slightly smaller in proportion

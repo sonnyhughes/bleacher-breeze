@@ -15,6 +15,39 @@
         <h1>Bleacher Breeze</h1>
         <p class="tagline">A wind report for the Friendly Confines.</p>
       </div>
+
+      <div class="scoreboard-clock" aria-label="Current local time in Chicago">
+        <svg class="wrigley-clock-svg" viewBox="0 0 200 200" role="img" aria-label="Analog clock showing local Chicago time">
+          <circle class="clock-outer" cx="100" cy="100" r="92" />
+          <circle class="clock-inner-ring" cx="100" cy="100" r="80" />
+
+          <g class="clock-dots">
+            <circle cx="100" cy="35" r="5.6" />
+            <circle cx="132.5" cy="43.7" r="5.6" />
+            <circle cx="156.3" cy="67.5" r="5.6" />
+            <circle cx="165" cy="100" r="5.6" />
+            <circle cx="156.3" cy="132.5" r="5.6" />
+            <circle cx="132.5" cy="156.3" r="5.6" />
+            <circle cx="100" cy="165" r="5.6" />
+            <circle cx="67.5" cy="156.3" r="5.6" />
+            <circle cx="43.7" cy="132.5" r="5.6" />
+            <circle cx="35" cy="100" r="5.6" />
+            <circle cx="43.7" cy="67.5" r="5.6" />
+            <circle cx="67.5" cy="43.7" r="5.6" />
+          </g>
+
+          <g id="clockHourHand" class="clock-hour-hand" transform="rotate(0 100 100)">
+            <path d="M96 104 L96 64 L104 64 L104 104 Z" />
+          </g>
+
+          <g id="clockMinuteHand" class="clock-minute-hand" transform="rotate(0 100 100)">
+            <path d="M96 104 L96 40 L104 40 L104 104 Z" />
+          </g>
+
+          <rect class="clock-center" x="93" y="93" width="14" height="14" rx="1" />
+        </svg>
+      </div>
+
     </header>
 
     <section class="current-card" aria-live="polite">
@@ -22,8 +55,9 @@
         <div class="status-block">
           <div class="stat-grid priority-stats" aria-label="Estimated batted-ball impact">
             <article class="stat-chip stat-chip-primary">
-              <p class="stat-label">Carry</p>
+              <p class="stat-label">Avg fly ball impact</p>
               <p id="carryBadge" class="stat-value stat-value-impact">--</p>
+              <p id="carryDetail" class="stat-detail">Max HR potential --</p>
             </article>
             <article class="stat-chip stat-chip-primary">
               <p class="stat-label">Side drift</p>
@@ -62,6 +96,7 @@
         <div class="field-widget" aria-label="Wrigley Field wind map">
           <h2 id="windLabel">Checking wind</h2>
           <p id="windDirectionDetail" class="wind-direction-detail">Loading direction…</p>
+          <p id="swirlAlert" class="swirl-alert" hidden>Swirl alert: high winds can play unpredictably inside Wrigley.</p>
 
           <svg id="fieldSvg" viewBox="0 0 1448 1086" role="img" aria-labelledby="fieldTitle fieldDesc">
             <title id="fieldTitle">Wrigley Field wind direction</title>
@@ -77,12 +112,11 @@
                 <feDropShadow dx="0" dy="10" stdDeviation="10" flood-color="rgba(0,0,0,.35)"/>
               </filter>
             </defs>
-
             <g id="windArrow" transform="translate(724 543) rotate(0)" filter="url(#softShadow)">
-              <line x1="0" y1="112" x2="0" y2="-110" class="arrow-line-gold" />
-              <path d="M0 -198 L-31 -110 L31 -110 Z" class="arrow-head-gold" />
+              <line x1="0" y1="148" x2="0" y2="-142" class="arrow-line-gold" />
+              <path d="M0 -255 L-43 -142 L43 -142 Z" class="arrow-head-gold" />
             </g>
-          </svg>
+</svg>
           <p class="widget-caption">Arrow shows where the wind is blowing toward.</p>
         </div>
       </div>
@@ -128,22 +162,23 @@
         <summary>How this works</summary>
           <div class="model-copy">
             <p>
-              Bleacher Breeze translates current weather at Wrigley Field into a simple batted-ball estimate. The baseline is a neutral day:
+              Bleacher Breeze translates current weather at Wrigley Field into public-facing batted-ball estimates. The baseline is a neutral day:
               70°F, 50% relative humidity, 29.92 inHg pressure, and 0 mph wind.
             </p>
 
             <div class="model-grid">
               <article>
-                <h3>Carry</h3>
+                <h3>Average fly ball impact</h3>
                 <p>
-                  Outward or inward wind is estimated at 3.75 feet per 1 mph of wind component. The app scales that slightly toward
-                  4.0 ft/mph in lighter air and toward 3.5 ft/mph in heavier air.
+                  The main Carry card starts with a 3.75 ft/mph physics baseline for peak home-run trajectories, then applies a 0.35 airflow attenuation factor.
+                  This blends the estimate down for ordinary high-air contact, including pop-ups, line drives, and deep flies.
                 </p>
               </article>
               <article>
-                <h3>Side drift</h3>
+                <h3>Max HR potential</h3>
                 <p>
-                  Crosswind is estimated at 0.75 feet per 1 mph of crosswind component, shown as left-to-right or right-to-left movement.
+                  The smaller line under Carry shows the unattenuated wind effect for a better-struck home-run trajectory. Headwinds receive a 1.2x drag modifier
+                  because they tend to knock balls down harder than tailwinds help them.
                 </p>
               </article>
               <article>
@@ -156,11 +191,10 @@
             </div>
 
             <p class="model-note">
-              These are directional estimates for a typical home-run trajectory, roughly 100 mph exit velocity and a 28° launch angle.
-              Real batted balls vary by launch angle, spin, exit velocity, and exact wind patterns inside the park.
+              The wind vector is projected against Wrigley’s center-field orientation, so pure crosswinds do not falsely show as outward carry.
+              Side Drift uses a smaller 0.75 ft/mph crosswind factor. These are directional estimates, not Statcast-grade projections.
             </p>
-          </div>
-      </details>
+          </div></details>
     </section>
 </main>
 

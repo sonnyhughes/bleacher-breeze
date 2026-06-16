@@ -86,3 +86,30 @@ The chart labels intentionally skip the first plotted point so the value label d
 ## Scrollable mobile charts
 
 On small screens, each forecast chart uses a wider internal SVG and horizontal scrolling. This keeps roughly the next 4–6 hours visible at once, while allowing the user to scroll sideways to see the full 12-hour trend.
+
+
+## Fixed chart indicator placement
+
+Forecast chart value labels are shown at consistent positions across all three graphs:
+- 4th plotted point
+- 8th plotted point
+- final plotted point
+
+
+## Gold SVG arrow
+
+This version replaces the map arrow with a thinner modern SVG line arrow in muted gold. It fits the club-like look a bit better than a bright white arrow or a text-style Unicode glyph.
+
+
+## Slightly larger gold arrow
+
+This version keeps the same thin modern gold SVG arrow, but scales it up slightly so it reads a bit more clearly over the field image.
+
+
+## Lighter gold arrow
+This version keeps the same larger thin SVG arrow, but uses a lighter champagne-gold tone.
+
+
+## Heavier lighter gold arrow
+
+This version keeps the lighter champagne-gold arrow, but adds a little more weight so it reads more clearly over the field image.

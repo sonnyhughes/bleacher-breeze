@@ -268,25 +268,18 @@ h2 {
   fill: rgba(18, 42, 29, 0.01);
 }
 
-.arrow-outline {
-  stroke: rgba(14, 51, 134, 0.94);
-  stroke-width: 44;
+.arrow-line-gold {
+  stroke: rgba(214, 178, 118, 0.97);
+  stroke-width: 15;
   stroke-linecap: round;
 }
 
-.arrow-line {
-  stroke: var(--paper-light);
-  stroke-width: 28;
-  stroke-linecap: round;
+.arrow-head-gold {
+  fill: rgba(214, 178, 118, 0.98);
 }
 
-.arrow-head-outline {
-  fill: rgba(14, 51, 134, 0.96);
-}
 
-.arrow-head {
-  fill: var(--paper-light);
-}
+
 
 .widget-caption {
   color: var(--muted);

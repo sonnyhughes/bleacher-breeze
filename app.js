@@ -211,21 +211,16 @@ function chartSvg({ values, labels, unit, minOverride = null }) {
     <circle class="chart-dot" cx="${x(index)}" cy="${y(value)}" r="4.5" />
   `).join("");
 
-  const maxIndex = values.indexOf(Math.max(...values));
-  const minIndex = values.indexOf(Math.min(...values));
-
   const valueLabels = values.map((value, index) => {
-    // Avoid labeling the first point so it does not crowd the y-axis labels.
-    // Use the 4th plotted hour as the early-chart label instead.
-    const earlyLabelIndex = Math.min(3, values.length - 1);
-    const show =
-      index !== 0 &&
-      (index === earlyLabelIndex ||
-        index === values.length - 1 ||
-        index === maxIndex ||
-        index === minIndex);
+    // Keep labels consistent across all charts:
+    // 4th point, 8th point, and final point.
+    const labelIndexes = new Set([
+      Math.min(3, values.length - 1),
+      Math.min(7, values.length - 1),
+      values.length - 1
+    ]);
 
-    if (!show) return "";
+    if (!labelIndexes.has(index)) return "";
     return `<text class="chart-value" x="${x(index)}" y="${y(value) - 12}" text-anchor="middle">${Math.round(value)}${unit}</text>`;
   }).join("");
 

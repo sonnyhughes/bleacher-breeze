@@ -527,3 +527,66 @@ details p {
     pointer-events: none;
   }
 }
+
+
+.explainer-card p {
+  color: var(--muted);
+}
+
+.model-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  margin: 18px 0;
+}
+
+.model-grid article {
+  border: 1px solid rgba(39, 77, 54, 0.14);
+  border-radius: 18px;
+  padding: 16px;
+  background: rgba(255, 252, 242, 0.58);
+}
+
+.model-grid h3 {
+  margin: 0 0 8px;
+  color: var(--ivy);
+  font-size: 1rem;
+  letter-spacing: -0.02em;
+}
+
+.model-grid p,
+.model-note {
+  margin: 0;
+}
+
+.model-note {
+  font-size: 0.94rem;
+}
+
+@media (max-width: 760px) {
+  .model-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+.model-copy {
+  margin-top: 18px;
+}
+
+.model-copy p {
+  color: var(--muted);
+}
+
+
+.notes details {
+  border-radius: 24px;
+}
+
+.notes summary {
+  cursor: pointer;
+}
+
+.notes .model-grid article {
+  background: rgba(255, 252, 242, 0.62);
+}

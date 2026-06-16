@@ -87,8 +87,7 @@
         </div>
       </div>
     </section>
-
-    <section class="forecast-section">
+<section class="forecast-section">
       <div class="section-heading">
         <div>
           <p class="eyebrow dark">Next 12 hours</p>
@@ -127,13 +126,43 @@
     <section class="notes">
       <details>
         <summary>How this works</summary>
-        <p>
-          Weather APIs report the direction the wind is coming from. Bleacher Breeze converts that into the direction the wind is
-          blowing toward, then compares it to Wrigley’s center-field line to decide whether the wind is blowing out, in, or across.
-        </p>
+          <div class="model-copy">
+            <p>
+              Bleacher Breeze translates current weather at Wrigley Field into a simple batted-ball estimate. The baseline is a neutral day:
+              70°F, 50% relative humidity, 29.92 inHg pressure, and 0 mph wind.
+            </p>
+
+            <div class="model-grid">
+              <article>
+                <h3>Carry</h3>
+                <p>
+                  Outward or inward wind is estimated at 3.75 feet per 1 mph of wind component. The app scales that slightly toward
+                  4.0 ft/mph in lighter air and toward 3.5 ft/mph in heavier air.
+                </p>
+              </article>
+              <article>
+                <h3>Side drift</h3>
+                <p>
+                  Crosswind is estimated at 0.75 feet per 1 mph of crosswind component, shown as left-to-right or right-to-left movement.
+                </p>
+              </article>
+              <article>
+                <h3>Air Density</h3>
+                <p>
+                  Air Density uses temperature, relative humidity, and surface pressure. Warmer, lower-pressure, more humid air generally helps carry.
+                  Colder, higher-pressure air generally suppresses carry.
+                </p>
+              </article>
+            </div>
+
+            <p class="model-note">
+              These are directional estimates for a typical home-run trajectory, roughly 100 mph exit velocity and a 28° launch angle.
+              Real batted balls vary by launch angle, spin, exit velocity, and exact wind patterns inside the park.
+            </p>
+          </div>
       </details>
     </section>
-  </main>
+</main>
 
   <script src="./app.js"></script>
 </body>

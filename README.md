@@ -179,3 +179,39 @@ This avoids double-counting wind: **Carry** remains the wind-based estimate, whi
 ## Carry display cleanup
 
 The carry and side-drift estimates still use the conservative 2 feet per mph factor and round to the nearest 5 feet, but the `~` prefix has been removed for a cleaner card display.
+
+
+## Wrigley environmental reference model
+
+The app now uses a Wrigley-oriented baseline of **70°F, 50% RH, 29.92 inHg, and 0 mph wind**.
+
+Implementation details:
+
+- **Carry** remains wind-based, but now uses a Wrigley-style wind factor of **3.75 ft per mph outward/inward**, with a small density adjustment:
+  - lower-density air scales toward **4.0 ft/mph**
+  - higher-density air scales toward **3.5 ft/mph**
+- **Side Drift** uses a smaller crosswind factor of **0.75 ft per mph**, rounded to the nearest 5 feet.
+- **Air Density** is independent from wind and uses temperature, relative humidity, and surface pressure.
+- Carry and Side Drift are rounded to the nearest 5 feet to keep them readable and avoid false precision.
+
+
+## Precision update and model details
+
+Carry and Side Drift no longer round to the nearest 5 feet. They now display whole-foot estimates.
+
+The **How this works** section in the app now documents the model assumptions:
+
+- Baseline: 70°F, 50% RH, 29.92 inHg, 0 mph wind
+- Carry: 3.75 ft per mph of outward/inward wind component, scaled between 3.5 and 4.0 based on air density
+- Side Drift: 0.75 ft per mph of crosswind component
+- Air Density: temperature, relative humidity, and surface pressure
+
+
+## How this works moved below forecast
+
+The **How this works** section now appears below the forecast trends instead of between the current conditions card and the forecast charts.
+
+
+## How this works details placement
+
+The **How this works** content now lives inside `body > main > section.notes > details`, instead of as a standalone section below it.

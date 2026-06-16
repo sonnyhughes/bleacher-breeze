@@ -6,9 +6,11 @@ const WRIGLEY = {
 
 const REFRESH_INTERVAL_MS = 10 * 60 * 1000;
 
-// Fan-facing estimate: roughly 5 mph of wind behind a fly ball can add about 19 feet.
-// 19 / 5 = 3.8 feet per 1 mph of carry wind.
-const FEET_PER_MPH_CARRY = 2.0;
+const BASELINE_TEMP_F = 70;
+const BASELINE_RH = 50;
+const BASELINE_PRESSURE_INHG = 29.92;
+const BASELINE_WIND_FEET_PER_MPH = 3.75;
+const CROSSWIND_FEET_PER_MPH = 0.75;
 
 const weatherCodeText = {
   0: "Clear",
@@ -120,57 +122,82 @@ function classifyWind(windFrom, speed) {
   };
 }
 
-function estimatedFeet(component) {
-  // Round to the nearest 5 feet so the display reads like a directional estimate,
-  // not a precise batted-ball projection.
-  return Math.round((component * FEET_PER_MPH_CARRY) / 5) * 5;
+function hpaToInHg(hpa) {
+  return hpa * 0.0295299830714;
 }
 
-function summarizeCarry(outComponent) {
-  const feet = estimatedFeet(outComponent);
+function saturationVaporPressureHpa(tempC) {
+  return 6.112 * Math.exp((17.67 * tempC) / (tempC + 243.5));
+}
+
+function airDensityKgM3(tempF, relativeHumidity, pressureHpa) {
+  const tempC = (tempF - 32) * (5 / 9);
+  const tempK = tempC + 273.15;
+  const vaporPressure = (relativeHumidity / 100) * saturationVaporPressureHpa(tempC) * 100;
+  const dryPressure = (pressureHpa * 100) - vaporPressure;
+
+  return (dryPressure / (287.05 * tempK)) + (vaporPressure / (461.495 * tempK));
+}
+
+function airDensityAdjustmentFeet(tempF, relativeHumidity, pressureHpa) {
+  if (!Number.isFinite(tempF) || !Number.isFinite(relativeHumidity) || !Number.isFinite(pressureHpa)) {
+    return 0;
+  }
+
+  const pressureInHg = hpaToInHg(pressureHpa);
+  const tempFeet = (tempF - BASELINE_TEMP_F) * 0.35;
+  const humidityFeet = ((relativeHumidity - BASELINE_RH) / 20) * 0.65;
+  const pressureFeet = ((BASELINE_PRESSURE_INHG - pressureInHg) / 0.1) * 1.2;
+
+  return tempFeet + humidityFeet + pressureFeet;
+}
+
+function windCarryFactor(tempF, relativeHumidity, pressureHpa) {
+  const airFeet = airDensityAdjustmentFeet(tempF, relativeHumidity, pressureHpa);
+
+  if (airFeet >= 5) return 4.0;
+  if (airFeet <= -5) return 3.5;
+  return BASELINE_WIND_FEET_PER_MPH;
+}
+
+function estimatedCarryFeet(component, windFactor) {
+  return Math.round(component * windFactor);
+}
+
+function estimatedCrossFeet(component) {
+  return Math.round(component * CROSSWIND_FEET_PER_MPH);
+}
+
+function summarizeCarry(outComponent, windFactor) {
+  const feet = estimatedCarryFeet(outComponent, windFactor);
   const absFeet = Math.abs(feet);
 
-  if (absFeet < 5) return "Neutral";
+  if (absFeet < 3) return "Neutral";
   if (feet > 0) return `+${absFeet} ft`;
   return `−${absFeet} ft`;
 }
 
 function summarizeCross(crossComponent) {
-  const feet = estimatedFeet(crossComponent);
+  const feet = estimatedCrossFeet(crossComponent);
   const absFeet = Math.abs(feet);
 
-  if (absFeet < 5) return "Minimal";
+  if (absFeet < 2) return "Minimal";
   const dir = crossComponent > 0 ? "L→R" : "R→L";
   return `${absFeet} ft ${dir}`;
 }
 
-function summarizeAirDensity(temp, dewPoint, pressure) {
-  if (!Number.isFinite(temp) || !Number.isFinite(pressure)) {
+function summarizeAirDensity(tempF, relativeHumidity, pressureHpa) {
+  if (!Number.isFinite(tempF) || !Number.isFinite(relativeHumidity) || !Number.isFinite(pressureHpa)) {
     return "Neutral";
   }
 
-  // Simple, fan-facing atmosphere indicator. This intentionally excludes wind.
-  // Warmer/lower-pressure air tends to be less dense. Colder/higher-pressure air tends to be denser.
-  // Dew point is included as a small nudge because humid air is slightly less dense, but its effect is smaller than wind.
-  let score = 0;
+  const currentDensity = airDensityKgM3(tempF, relativeHumidity, pressureHpa);
+  const baselineDensity = airDensityKgM3(BASELINE_TEMP_F, BASELINE_RH, BASELINE_PRESSURE_INHG / 0.0295299830714);
+  const densityChange = (baselineDensity - currentDensity) / baselineDensity;
+  const airFeet = airDensityAdjustmentFeet(tempF, relativeHumidity, pressureHpa);
 
-  if (temp >= 80) score += 1.25;
-  else if (temp >= 70) score += 0.75;
-  else if (temp <= 45) score -= 1;
-  else if (temp <= 55) score -= 0.5;
-
-  if (pressure <= 1007) score += 1;
-  else if (pressure <= 1012) score += 0.5;
-  else if (pressure >= 1022) score -= 1;
-  else if (pressure >= 1018) score -= 0.5;
-
-  if (Number.isFinite(dewPoint)) {
-    if (dewPoint >= 65) score += 0.35;
-    else if (dewPoint <= 35) score -= 0.25;
-  }
-
-  if (score >= 1) return "Slight carry";
-  if (score <= -1) return "Heavy air";
+  if (densityChange >= 0.01 || airFeet >= 5) return "Slight carry";
+  if (densityChange <= -0.01 || airFeet <= -5) return "Heavy air";
   return "Neutral";
 }
 
@@ -202,10 +229,11 @@ function renderCurrent(current) {
   const gusts = current.wind_gusts_10m;
   const direction = current.wind_direction_10m;
   const temp = Math.round(current.temperature_2m);
-  const dewPoint = Number(current.dew_point_2m);
+  const relativeHumidity = Number(current.relative_humidity_2m);
   const pressure = Number(current.surface_pressure);
   const classification = classifyWind(direction, speed);
-  const airDensity = summarizeAirDensity(temp, dewPoint, pressure);
+  const windFactor = windCarryFactor(temp, relativeHumidity, pressure);
+  const airDensity = summarizeAirDensity(temp, relativeHumidity, pressure);
 
   els.windLabel.textContent = classification.headline;
   els.windDirectionDetail.textContent = classification.detail;
@@ -213,7 +241,7 @@ function renderCurrent(current) {
   els.gustValue.textContent = `${Math.round(gusts)} mph`;
   els.tempValue.textContent = `${temp}°`;
   els.airFeelValue.textContent = airDensity;
-  els.carryBadge.textContent = summarizeCarry(classification.outComponent);
+  els.carryBadge.textContent = summarizeCarry(classification.outComponent, windFactor);
   els.crossBadge.textContent = summarizeCross(classification.crossComponent);
   els.updatedText.textContent = `Updated ${formatUpdated()}`;
   setArrow(classification.windTo);

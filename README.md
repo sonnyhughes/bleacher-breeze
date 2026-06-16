@@ -1,4 +1,4 @@
-# Wrigley Wind
+# Bleacher Breeze
 
 A lightweight static website that shows whether the wind is blowing in, out, or across Wrigley Field right now, plus the next few hours.
 
@@ -33,7 +33,7 @@ http://localhost:8000
 
 ## Publish on GitHub Pages
 
-1. Create a new GitHub repository, for example `wrigley-wind`.
+1. Create a new GitHub repository, for example `bleacher-breeze`.
 2. Upload these files to the root of the repo:
    - `index.html`
    - `styles.css`
@@ -48,7 +48,7 @@ http://localhost:8000
 6. GitHub will publish the site at a URL like:
 
 ```text
-https://YOUR-USERNAME.github.io/wrigley-wind/
+https://YOUR-USERNAME.github.io/bleacher-breeze/
 ```
 
 ## Configuration

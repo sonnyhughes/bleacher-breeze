@@ -1,72 +1,49 @@
 # Bleacher Breeze
 
-A lightweight static website that shows whether the wind is blowing in, out, or across Wrigley Field right now, plus the next few hours.
+A lightweight static website for GitHub Pages that shows whether the wind is blowing in, out, or across Wrigley Field right now, plus forecast trends for the next 12 hours.
 
-## What it does
+## What's included
 
-- Pulls current and hourly weather from Open-Meteo
-- Uses Wrigley Field coordinates
-- Converts wind direction from “coming from” to “blowing toward”
-- Compares wind direction against a configurable center-field bearing
-- Shows:
-  - Current wind label
-  - Wind speed and gusts
-  - Effective out-to-CF component
-  - Next 12 hourly forecast cards
-  - Simple field graphic with wind arrow
+- Modern, refined weather-app layout with a 1914 Club / Chicago Athletic Association feel
+- Larger Wrigley Field visual as the main focal point
+- Current Wrigley Field wind direction
+- Wind speed, gusts, temperature, and sky conditions
+- Short carry / crosswind summaries
+- Vintage-color Wrigley Field artwork with a Cubs-blue arrow treatment
+- Minimal 12-hour forecast graphs:
+  - Temperature
+  - Wind speed
+  - Wind gusts
 
-## Run locally
+## Files
 
-Open `index.html` in your browser.
-
-For the most realistic local test, run a tiny local server:
-
-```bash
-python3 -m http.server 8000
-```
-
-Then visit:
-
-```text
-http://localhost:8000
-```
+- `index.html`
+- `styles.css`
+- `app.js`
+- `wrigley-vintage-color.png`
+- `README.md`
 
 ## Publish on GitHub Pages
 
 1. Create a new GitHub repository, for example `bleacher-breeze`.
-2. Upload these files to the root of the repo:
-   - `index.html`
-   - `styles.css`
-   - `app.js`
-   - `README.md`
+2. Upload all files from this folder to the root of the repo.
 3. In GitHub, go to **Settings → Pages**.
 4. Under **Build and deployment**, choose:
    - Source: **Deploy from a branch**
    - Branch: **main**
    - Folder: **/root**
 5. Save.
-6. GitHub will publish the site at a URL like:
 
-```text
-https://YOUR-USERNAME.github.io/bleacher-breeze/
-```
+Your site should publish at:
+
+`https://YOUR-USERNAME.github.io/bleacher-breeze/`
 
 ## Configuration
 
-In `app.js`, you can adjust this value:
+In `app.js`, you can adjust:
 
 ```js
 centerFieldBearing: 50
 ```
 
-That bearing controls how the app decides whether wind is blowing out to center field or in from center field. Increase or decrease it slightly if you want to tune the direction against a satellite view or your preferred definition of Wrigley’s center-field orientation.
-
-## Notes
-
-Weather APIs generally report the direction the wind is coming from. Baseball fans usually care where the wind is going. This app converts the weather API direction like this:
-
-```js
-const windTo = (windFrom + 180) % 360;
-```
-
-Then it calculates the component of that wind blowing toward center field.
+That value controls how the app decides whether the wind is blowing out to center field or in from center field.

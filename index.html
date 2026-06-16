@@ -13,58 +13,115 @@
       <div>
         <p class="eyebrow">Wrigley Field</p>
         <h1>Bleacher Breeze</h1>
+        <p class="tagline">A wind report for the Friendly Confines.</p>
       </div>
-      <button id="refreshButton" class="button" type="button">Refresh</button>
     </header>
 
     <section class="current-card" aria-live="polite">
-      <div class="status-block">
+      <div class="current-topline">
         <p id="updatedText" class="updated">Loading weather…</p>
-        <h2 id="windLabel">Checking wind</h2>
-        <p id="windDetails" class="wind-details">Fetching latest conditions over Wrigley Field.</p>
-        <p id="componentDetails" class="component-details"></p>
+        <button id="refreshButton" class="button" type="button">Refresh</button>
       </div>
 
-      <div class="field-widget" aria-label="Wrigley Field wind map">
-        <svg id="fieldSvg" viewBox="0 0 420 420" role="img" aria-labelledby="fieldTitle fieldDesc">
-          <title id="fieldTitle">Wrigley Field wind direction</title>
-          <desc id="fieldDesc">A simplified baseball field with an arrow showing the direction the wind is blowing.</desc>
+      <div class="current-content">
+        <div class="status-block">
+          <h2 id="windLabel">Checking wind</h2>
 
-          <rect x="0" y="0" width="420" height="420" rx="28" class="sky" />
-          <path d="M210 331 L76 197 Q105 83 210 52 Q315 83 344 197 Z" class="outfield" />
-          <path d="M210 331 L132 253 Q163 207 210 207 Q257 207 288 253 Z" class="infield" />
-          <path d="M210 331 L178 299 L210 267 L242 299 Z" class="diamond" />
-          <circle cx="210" cy="267" r="5" class="base" />
-          <circle cx="178" cy="299" r="5" class="base" />
-          <circle cx="242" cy="299" r="5" class="base" />
-          <circle cx="210" cy="331" r="6" class="plate" />
-          <path d="M210 331 L210 52" class="cf-line" />
-          <text x="210" y="35" class="field-label" text-anchor="middle">CF</text>
-          <text x="90" y="210" class="field-label" text-anchor="middle">LF</text>
-          <text x="330" y="210" class="field-label" text-anchor="middle">RF</text>
+          <div class="stat-grid" aria-label="Current weather details">
+            <article class="stat-chip">
+              <p class="stat-label">Wind</p>
+              <p id="windValue" class="stat-value">--</p>
+            </article>
+            <article class="stat-chip">
+              <p class="stat-label">Gusts</p>
+              <p id="gustValue" class="stat-value">--</p>
+            </article>
+            <article class="stat-chip">
+              <p class="stat-label">Temp</p>
+              <p id="tempValue" class="stat-value">--</p>
+            </article>
+            <article class="stat-chip">
+              <p class="stat-label">Sky</p>
+              <p id="conditionsValue" class="stat-value stat-value-small">--</p>
+            </article>
+          </div>
 
-          <g id="windArrow" transform="translate(210 205) rotate(0)">
-            <line x1="0" y1="70" x2="0" y2="-70" class="arrow-line" />
-            <path d="M0 -88 L-18 -55 L18 -55 Z" class="arrow-head" />
-          </g>
-        </svg>
+          <div class="note-row" aria-label="Wind breakdown">
+            <p id="carryBadge" class="note-pill">Carry --</p>
+            <p id="crossBadge" class="note-pill">Crosswind --</p>
+          </div>
+        </div>
+
+        <div class="field-widget" aria-label="Wrigley Field wind map">
+          <svg id="fieldSvg" viewBox="0 0 1448 1086" role="img" aria-labelledby="fieldTitle fieldDesc">
+            <title id="fieldTitle">Wrigley Field wind direction</title>
+            <desc id="fieldDesc">A refined overhead image of Wrigley Field with an arrow showing the direction the wind is blowing toward.</desc>
+
+            <image href="./wrigley-vintage-color.png" x="0" y="0" width="1448" height="1086" preserveAspectRatio="xMidYMid slice" />
+            <g class="map-scrim">
+              <rect x="0" y="0" width="1448" height="1086" />
+            </g>
+
+            <defs>
+              <filter id="softShadow" x="-50%" y="-50%" width="200%" height="200%">
+                <feDropShadow dx="0" dy="10" stdDeviation="10" flood-color="rgba(0,0,0,.35)"/>
+              </filter>
+            </defs>
+
+            <g id="windArrow" transform="translate(724 543) rotate(0)" filter="url(#softShadow)">
+              <line x1="0" y1="155" x2="0" y2="-120" class="arrow-outline" />
+              <line x1="0" y1="150" x2="0" y2="-116" class="arrow-line" />
+              <path d="M0 -214 L-58 -112 L58 -112 Z" class="arrow-head-outline" />
+              <path d="M0 -204 L-43 -128 L43 -128 Z" class="arrow-head" />
+            </g>
+          </svg>
+          <p class="widget-caption">Arrow shows where the wind is blowing toward.</p>
+        </div>
       </div>
     </section>
 
     <section class="forecast-section">
       <div class="section-heading">
-        <h3>Next few hours</h3>
+        <div>
+          <p class="eyebrow dark">Next 12 hours</p>
+          <h3>Forecast trends</h3>
+        </div>
         <p id="sourceText">Weather data from Open-Meteo</p>
       </div>
-      <div id="forecastGrid" class="forecast-grid" aria-live="polite"></div>
+
+      <div class="chart-stack">
+        <article class="chart-card">
+          <div class="chart-header">
+            <h4>Temperature</h4>
+            <p>Hourly forecast</p>
+          </div>
+          <div id="tempChart" class="chart" role="img" aria-label="Forecasted temperature over the next 12 hours"></div>
+        </article>
+
+        <article class="chart-card">
+          <div class="chart-header">
+            <h4>Wind speed</h4>
+            <p>Sustained wind</p>
+          </div>
+          <div id="speedChart" class="chart" role="img" aria-label="Forecasted wind speed over the next 12 hours"></div>
+        </article>
+
+        <article class="chart-card">
+          <div class="chart-header">
+            <h4>Wind gusts</h4>
+            <p>Peak gust forecast</p>
+          </div>
+          <div id="gustChart" class="chart" role="img" aria-label="Forecasted wind gusts over the next 12 hours"></div>
+        </article>
+      </div>
     </section>
 
     <section class="notes">
       <details>
-        <summary>How this decides “in” vs “out”</summary>
+        <summary>How this works</summary>
         <p>
-          Weather APIs report the direction wind is coming from. This app converts that into the direction wind is blowing toward,
-          then compares it to Wrigley’s center-field bearing. A wind with a positive center-field component is shown as blowing out.
+          Weather APIs report the direction the wind is coming from. Bleacher Breeze converts that into the direction the wind is
+          blowing toward, then compares it to Wrigley’s center-field line to decide whether the wind is blowing out, in, or across.
         </p>
       </details>
     </section>

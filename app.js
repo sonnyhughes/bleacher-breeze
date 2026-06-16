@@ -1,8 +1,6 @@
 const WRIGLEY = {
   latitude: 41.9484,
   longitude: -87.6553,
-  // Bearing from home plate toward center field, in degrees clockwise from true north.
-  // Tune this value if you want the visual classification to be more/less sensitive.
   centerFieldBearing: 50
 };
 
@@ -34,9 +32,15 @@ const els = {
   refreshButton: document.querySelector("#refreshButton"),
   updatedText: document.querySelector("#updatedText"),
   windLabel: document.querySelector("#windLabel"),
-  windDetails: document.querySelector("#windDetails"),
-  componentDetails: document.querySelector("#componentDetails"),
-  forecastGrid: document.querySelector("#forecastGrid"),
+  windValue: document.querySelector("#windValue"),
+  gustValue: document.querySelector("#gustValue"),
+  tempValue: document.querySelector("#tempValue"),
+  conditionsValue: document.querySelector("#conditionsValue"),
+  carryBadge: document.querySelector("#carryBadge"),
+  crossBadge: document.querySelector("#crossBadge"),
+  tempChart: document.querySelector("#tempChart"),
+  speedChart: document.querySelector("#speedChart"),
+  gustChart: document.querySelector("#gustChart"),
   windArrow: document.querySelector("#windArrow")
 };
 
@@ -83,35 +87,42 @@ function classifyWind(windFrom, speed) {
   const crossComponent = speed * Math.sin((diffFromCenter * Math.PI) / 180);
 
   let label;
-  let shortLabel;
-
   if (outComponent >= 2) {
     label = "Out to CF";
-    shortLabel = "Out";
   } else if (outComponent <= -2) {
     label = "Blowing In";
-    shortLabel = "In";
   } else if (crossComponent > 0) {
     label = "Left to Right";
-    shortLabel = "L → R";
   } else {
     label = "Right to Left";
-    shortLabel = "R → L";
   }
 
   return {
     label,
-    shortLabel,
     windTo,
     outComponent,
     crossComponent
   };
 }
 
-function formatTime(isoString, options = {}) {
+function summarizeCarry(outComponent) {
+  const magnitude = Math.abs(round(outComponent, 1));
+  if (magnitude < 1) return "Carry: neutral";
+  if (outComponent > 0) return `Carry: +${magnitude} mph to CF`;
+  return `Carry: −${magnitude} mph in from CF`;
+}
+
+function summarizeCross(crossComponent) {
+  const magnitude = Math.abs(round(crossComponent, 1));
+  if (magnitude < 1) return "Crosswind: minimal";
+  const dir = crossComponent > 0 ? "L → R" : "R → L";
+  return `Crosswind: ${magnitude} mph ${dir}`;
+}
+
+function formatTime(isoString, withMinutes = false) {
   return new Intl.DateTimeFormat("en-US", {
     hour: "numeric",
-    minute: options.withMinutes ? "2-digit" : undefined,
+    minute: withMinutes ? "2-digit" : undefined,
     hour12: true,
     timeZone: "America/Chicago"
   }).format(new Date(isoString));
@@ -128,8 +139,7 @@ function formatUpdated(date = new Date()) {
 }
 
 function setArrow(windTo) {
-  // SVG arrow points north by default. Rotate to the direction wind is blowing toward.
-  els.windArrow.setAttribute("transform", `translate(210 205) rotate(${windTo})`);
+  els.windArrow.setAttribute("transform", `translate(724 543) rotate(${windTo})`);
 }
 
 function renderCurrent(current) {
@@ -141,34 +151,92 @@ function renderCurrent(current) {
   const classification = classifyWind(direction, speed);
 
   els.windLabel.textContent = classification.label;
-  els.windDetails.textContent = `${Math.round(speed)} mph wind, gusts up to ${Math.round(gusts)} mph`;
-  els.componentDetails.textContent =
-    `${temp}° and ${conditions.toLowerCase()}. ` +
-    `Effective out-to-CF component: ${round(classification.outComponent, 1)} mph. ` +
-    `Crosswind component: ${round(classification.crossComponent, 1)} mph.`;
+  els.windValue.textContent = `${Math.round(speed)} mph`;
+  els.gustValue.textContent = `${Math.round(gusts)} mph`;
+  els.tempValue.textContent = `${temp}°`;
+  els.conditionsValue.textContent = conditions;
+  els.carryBadge.textContent = summarizeCarry(classification.outComponent);
+  els.crossBadge.textContent = summarizeCross(classification.crossComponent);
   els.updatedText.textContent = `Updated ${formatUpdated()}`;
   setArrow(classification.windTo);
 }
 
-function renderForecast(hourly) {
-  const cards = hourly.time.slice(0, 12).map((time, index) => {
-    const speed = hourly.wind_speed_10m[index];
-    const gusts = hourly.wind_gusts_10m[index];
-    const direction = hourly.wind_direction_10m[index];
-    const temp = hourly.temperature_2m[index];
-    const classification = classifyWind(direction, speed);
+function chartSvg({ values, labels, unit, minOverride = null }) {
+  const width = 1000;
+  const height = 206;
+  const margin = { top: 22, right: 32, bottom: 38, left: 92 };
+  const innerW = width - margin.left - margin.right;
+  const innerH = height - margin.top - margin.bottom;
 
+  const minVal = minOverride ?? Math.min(...values);
+  const maxVal = Math.max(...values);
+  const padding = Math.max(unit === "°" ? 2 : 2, (maxVal - minVal) * 0.18);
+  const yMin = minOverride === 0 ? 0 : Math.floor(minVal - padding);
+  const yMax = Math.ceil(maxVal + padding);
+  const range = Math.max(1, yMax - yMin);
+
+  const x = index => margin.left + (values.length === 1 ? innerW / 2 : (index / (values.length - 1)) * innerW);
+  const y = value => margin.top + ((yMax - value) / range) * innerH;
+
+  const points = values.map((value, index) => `${x(index)},${y(value)}`).join(" ");
+  const areaPoints = `${margin.left},${margin.top + innerH} ${points} ${margin.left + innerW},${margin.top + innerH}`;
+  const gridValues = [yMin, yMin + range / 2, yMax];
+
+  const formatAxisValue = value => {
+    if (unit === "°") return `${Math.round(value)}°`;
+    return `${Math.round(value)} mph`;
+  };
+
+  const grid = gridValues.map(value => {
+    const yy = y(value);
     return `
-      <article class="forecast-card">
-        <p class="forecast-time">${formatTime(time)}</p>
-        <p class="forecast-label">${classification.label}</p>
-        <p class="forecast-speed">${Math.round(speed)} mph</p>
-        <p class="forecast-small">Gusts ${Math.round(gusts)} mph · ${Math.round(temp)}°</p>
-      </article>
+      <line class="grid-line" x1="${margin.left}" y1="${yy}" x2="${margin.left + innerW}" y2="${yy}" />
+      <text class="chart-label" x="${margin.left - 14}" y="${yy + 4}" text-anchor="end">${formatAxisValue(value)}</text>
     `;
   }).join("");
 
-  els.forecastGrid.innerHTML = cards;
+  const dots = values.map((value, index) => `
+    <circle class="chart-dot" cx="${x(index)}" cy="${y(value)}" r="4.5" />
+  `).join("");
+
+  const maxIndex = values.indexOf(Math.max(...values));
+  const minIndex = values.indexOf(Math.min(...values));
+
+  const valueLabels = values.map((value, index) => {
+    const show = index === 0 || index === values.length - 1 || index === maxIndex || index === minIndex;
+    if (!show) return "";
+    return `<text class="chart-value" x="${x(index)}" y="${y(value) - 12}" text-anchor="middle">${Math.round(value)}${unit}</text>`;
+  }).join("");
+
+  const xLabels = labels.map((label, index) => {
+    const show = index === 0 || index === values.length - 1 || index % 3 === 0;
+    if (!show) return "";
+    return `<text class="chart-label" x="${x(index)}" y="${height - 10}" text-anchor="middle">${label}</text>`;
+  }).join("");
+
+  return `
+    <svg viewBox="0 0 ${width} ${height}" role="presentation" focusable="false" aria-hidden="true">
+      ${grid}
+      <line class="axis" x1="${margin.left}" y1="${margin.top + innerH}" x2="${margin.left + innerW}" y2="${margin.top + innerH}" />
+      <polygon class="chart-area" points="${areaPoints}" />
+      <polyline class="chart-line" points="${points}" />
+      ${dots}
+      ${valueLabels}
+      ${xLabels}
+    </svg>
+  `;
+}
+
+function renderCharts(hourly) {
+  const times = hourly.time.slice(0, 12);
+  const labels = times.map(time => formatTime(time));
+  const temps = hourly.temperature_2m.slice(0, 12);
+  const speeds = hourly.wind_speed_10m.slice(0, 12);
+  const gusts = hourly.wind_gusts_10m.slice(0, 12);
+
+  els.tempChart.innerHTML = chartSvg({ values: temps, labels, unit: "°" });
+  els.speedChart.innerHTML = chartSvg({ values: speeds, labels, unit: " mph", minOverride: 0 });
+  els.gustChart.innerHTML = chartSvg({ values: gusts, labels, unit: " mph", minOverride: 0 });
 }
 
 async function loadWeather() {
@@ -184,13 +252,20 @@ async function loadWeather() {
 
     const data = await response.json();
     renderCurrent(data.current);
-    renderForecast(data.hourly);
+    renderCharts(data.hourly);
   } catch (error) {
     console.error(error);
     els.updatedText.textContent = "Unable to load weather";
     els.windLabel.textContent = "Try again";
-    els.windDetails.textContent = "The weather API did not respond. Check your connection and refresh.";
-    els.componentDetails.textContent = "";
+    els.windValue.textContent = "--";
+    els.gustValue.textContent = "--";
+    els.tempValue.textContent = "--";
+    els.conditionsValue.textContent = "--";
+    els.carryBadge.textContent = "Carry --";
+    els.crossBadge.textContent = "Crosswind --";
+    els.tempChart.innerHTML = "";
+    els.speedChart.innerHTML = "";
+    els.gustChart.innerHTML = "";
   } finally {
     els.refreshButton.disabled = false;
     els.refreshButton.textContent = "Refresh";

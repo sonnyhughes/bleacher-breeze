@@ -150,3 +150,32 @@ On portrait / narrow screens, the current card now flows in this order:
 3. updated time and refresh button
 
 On wider landscape layouts, the map remains on the left and the metrics remain on the right.
+
+
+## Air Feel metric
+
+The app keeps **Carry** and **Side Drift** as the primary wind-impact cards. The former **Sky** card is now **Air Feel**, a simple secondary context indicator based on temperature, dew point, and surface pressure:
+
+- **Slight carry**: warmer and/or lower-pressure air
+- **Neutral**: mixed or ordinary conditions
+- **Heavy air**: colder and/or higher-pressure air
+
+This is intentionally a fan-facing context label, not a precise physics model. Wind-based **Carry** and **Side Drift** remain the primary batted-ball indicators.
+
+
+## Conservative carry estimates and Air Density
+
+Carry and Side Drift now use a more conservative estimate of **2 feet per mph** of wind component, rounded to the nearest 5 feet and displayed with `~` to make it clear these are directional estimates.
+
+The former **Air Feel** card is now **Air Density**. It is intentionally independent from wind and uses only temperature, dew point, and surface pressure:
+
+- **Slight carry**: warmer and/or lower-pressure air
+- **Neutral**: mixed or ordinary conditions
+- **Heavy air**: colder and/or higher-pressure air
+
+This avoids double-counting wind: **Carry** remains the wind-based estimate, while **Air Density** is the non-wind atmosphere context.
+
+
+## Carry display cleanup
+
+The carry and side-drift estimates still use the conservative 2 feet per mph factor and round to the nearest 5 feet, but the `~` prefix has been removed for a cleaner card display.

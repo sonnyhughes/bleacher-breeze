@@ -8,7 +8,7 @@ const REFRESH_INTERVAL_MS = 10 * 60 * 1000;
 
 // Fan-facing estimate: roughly 5 mph of wind behind a fly ball can add about 19 feet.
 // 19 / 5 = 3.8 feet per 1 mph of carry wind.
-const FEET_PER_MPH_CARRY = 3.8;
+const FEET_PER_MPH_CARRY = 2.0;
 
 const weatherCodeText = {
   0: "Clear",
@@ -40,7 +40,7 @@ const els = {
   windValue: document.querySelector("#windValue"),
   gustValue: document.querySelector("#gustValue"),
   tempValue: document.querySelector("#tempValue"),
-  conditionsValue: document.querySelector("#conditionsValue"),
+  airFeelValue: document.querySelector("#airFeelValue"),
   carryBadge: document.querySelector("#carryBadge"),
   crossBadge: document.querySelector("#crossBadge"),
   tempChart: document.querySelector("#tempChart"),
@@ -58,7 +58,10 @@ function apiUrl() {
       "weather_code",
       "wind_speed_10m",
       "wind_direction_10m",
-      "wind_gusts_10m"
+      "wind_gusts_10m",
+      "relative_humidity_2m",
+      "dew_point_2m",
+      "surface_pressure"
     ].join(","),
     hourly: [
       "temperature_2m",
@@ -118,14 +121,16 @@ function classifyWind(windFrom, speed) {
 }
 
 function estimatedFeet(component) {
-  return Math.round(component * FEET_PER_MPH_CARRY);
+  // Round to the nearest 5 feet so the display reads like a directional estimate,
+  // not a precise batted-ball projection.
+  return Math.round((component * FEET_PER_MPH_CARRY) / 5) * 5;
 }
 
 function summarizeCarry(outComponent) {
   const feet = estimatedFeet(outComponent);
   const absFeet = Math.abs(feet);
 
-  if (absFeet < 3) return "Neutral";
+  if (absFeet < 5) return "Neutral";
   if (feet > 0) return `+${absFeet} ft`;
   return `−${absFeet} ft`;
 }
@@ -134,9 +139,39 @@ function summarizeCross(crossComponent) {
   const feet = estimatedFeet(crossComponent);
   const absFeet = Math.abs(feet);
 
-  if (absFeet < 3) return "Minimal";
+  if (absFeet < 5) return "Minimal";
   const dir = crossComponent > 0 ? "L→R" : "R→L";
   return `${absFeet} ft ${dir}`;
+}
+
+function summarizeAirDensity(temp, dewPoint, pressure) {
+  if (!Number.isFinite(temp) || !Number.isFinite(pressure)) {
+    return "Neutral";
+  }
+
+  // Simple, fan-facing atmosphere indicator. This intentionally excludes wind.
+  // Warmer/lower-pressure air tends to be less dense. Colder/higher-pressure air tends to be denser.
+  // Dew point is included as a small nudge because humid air is slightly less dense, but its effect is smaller than wind.
+  let score = 0;
+
+  if (temp >= 80) score += 1.25;
+  else if (temp >= 70) score += 0.75;
+  else if (temp <= 45) score -= 1;
+  else if (temp <= 55) score -= 0.5;
+
+  if (pressure <= 1007) score += 1;
+  else if (pressure <= 1012) score += 0.5;
+  else if (pressure >= 1022) score -= 1;
+  else if (pressure >= 1018) score -= 0.5;
+
+  if (Number.isFinite(dewPoint)) {
+    if (dewPoint >= 65) score += 0.35;
+    else if (dewPoint <= 35) score -= 0.25;
+  }
+
+  if (score >= 1) return "Slight carry";
+  if (score <= -1) return "Heavy air";
+  return "Neutral";
 }
 
 function formatTime(isoString, withMinutes = false) {
@@ -167,15 +202,17 @@ function renderCurrent(current) {
   const gusts = current.wind_gusts_10m;
   const direction = current.wind_direction_10m;
   const temp = Math.round(current.temperature_2m);
-  const conditions = weatherCodeText[current.weather_code] || "Current conditions";
+  const dewPoint = Number(current.dew_point_2m);
+  const pressure = Number(current.surface_pressure);
   const classification = classifyWind(direction, speed);
+  const airDensity = summarizeAirDensity(temp, dewPoint, pressure);
 
   els.windLabel.textContent = classification.headline;
   els.windDirectionDetail.textContent = classification.detail;
   els.windValue.textContent = `${Math.round(speed)} mph`;
   els.gustValue.textContent = `${Math.round(gusts)} mph`;
   els.tempValue.textContent = `${temp}°`;
-  els.conditionsValue.textContent = conditions;
+  els.airFeelValue.textContent = airDensity;
   els.carryBadge.textContent = summarizeCarry(classification.outComponent);
   els.crossBadge.textContent = summarizeCross(classification.crossComponent);
   els.updatedText.textContent = `Updated ${formatUpdated()}`;
@@ -286,7 +323,7 @@ async function loadWeather() {
     els.windValue.textContent = "--";
     els.gustValue.textContent = "--";
     els.tempValue.textContent = "--";
-    els.conditionsValue.textContent = "--";
+    els.airFeelValue.textContent = "--";
     els.carryBadge.textContent = "--";
     els.crossBadge.textContent = "--";
     els.tempChart.innerHTML = "";

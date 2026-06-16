@@ -81,3 +81,8 @@ The refresh button remains available for manual updates.
 ## Chart label placement
 
 The chart labels intentionally skip the first plotted point so the value label does not crowd the y-axis labels. The first visible value label appears around the 4th plotted hour instead.
+
+
+## Scrollable mobile charts
+
+On small screens, each forecast chart uses a wider internal SVG and horizontal scrolling. This keeps roughly the next 4–6 hours visible at once, while allowing the user to scroll sideways to see the full 12-hour trend.

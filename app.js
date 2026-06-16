@@ -127,8 +127,8 @@ function summarizeCross(crossComponent) {
   const absFeet = Math.abs(feet);
 
   if (absFeet < 3) return "Minimal";
-  const dir = crossComponent > 0 ? "L → R" : "R → L";
-  return `~${absFeet} ft ${dir}`;
+  const dir = crossComponent > 0 ? "L→R" : "R→L";
+  return `${absFeet} ft ${dir}`;
 }
 
 function formatTime(isoString, withMinutes = false) {
@@ -215,7 +215,16 @@ function chartSvg({ values, labels, unit, minOverride = null }) {
   const minIndex = values.indexOf(Math.min(...values));
 
   const valueLabels = values.map((value, index) => {
-    const show = index === 0 || index === values.length - 1 || index === maxIndex || index === minIndex;
+    // Avoid labeling the first point so it does not crowd the y-axis labels.
+    // Use the 4th plotted hour as the early-chart label instead.
+    const earlyLabelIndex = Math.min(3, values.length - 1);
+    const show =
+      index !== 0 &&
+      (index === earlyLabelIndex ||
+        index === values.length - 1 ||
+        index === maxIndex ||
+        index === minIndex);
+
     if (!show) return "";
     return `<text class="chart-value" x="${x(index)}" y="${y(value) - 12}" text-anchor="middle">${Math.round(value)}${unit}</text>`;
   }).join("");

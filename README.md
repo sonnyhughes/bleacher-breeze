@@ -76,3 +76,8 @@ setInterval(loadWeather, REFRESH_INTERVAL_MS);
 ```
 
 The refresh button remains available for manual updates.
+
+
+## Chart label placement
+
+The chart labels intentionally skip the first plotted point so the value label does not crowd the y-axis labels. The first visible value label appears around the 4th plotted hour instead.

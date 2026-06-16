@@ -18,18 +18,8 @@
     </header>
 
     <section class="current-card" aria-live="polite">
-      <div class="current-topline">
-        <div>
-          <p id="updatedText" class="updated">Loading weather…</p>
-          <p class="auto-note">Auto-updates every 10 minutes</p>
-        </div>
-        <button id="refreshButton" class="button" type="button">Refresh</button>
-      </div>
-
       <div class="current-content">
         <div class="status-block">
-          <h2 id="windLabel">Checking wind</h2>
-
           <div class="stat-grid priority-stats" aria-label="Estimated batted-ball impact">
             <article class="stat-chip stat-chip-primary">
               <p class="stat-label">Carry</p>
@@ -59,9 +49,20 @@
               <p id="conditionsValue" class="stat-value stat-value-small">--</p>
             </article>
           </div>
+
+          <div class="current-actions">
+            <div>
+              <p id="updatedText" class="updated">Loading weather…</p>
+              <p class="auto-note">Auto-updates every 10 minutes</p>
+            </div>
+            <button id="refreshButton" class="button" type="button">Refresh</button>
+          </div>
         </div>
 
         <div class="field-widget" aria-label="Wrigley Field wind map">
+          <h2 id="windLabel">Checking wind</h2>
+          <p id="windDirectionDetail" class="wind-direction-detail">Loading direction…</p>
+
           <svg id="fieldSvg" viewBox="0 0 1448 1086" role="img" aria-labelledby="fieldTitle fieldDesc">
             <title id="fieldTitle">Wrigley Field wind direction</title>
             <desc id="fieldDesc">A refined overhead image of Wrigley Field with an arrow showing the direction the wind is blowing toward.</desc>
@@ -78,8 +79,8 @@
             </defs>
 
             <g id="windArrow" transform="translate(724 543) rotate(0)" filter="url(#softShadow)">
-              <line x1="0" y1="146" x2="0" y2="-124" class="arrow-line-gold" />
-              <path d="M0 -182 L-25 -128 L25 -128 Z" class="arrow-head-gold" />
+              <line x1="0" y1="112" x2="0" y2="-110" class="arrow-line-gold" />
+              <path d="M0 -198 L-31 -110 L31 -110 Z" class="arrow-head-gold" />
             </g>
           </svg>
           <p class="widget-caption">Arrow shows where the wind is blowing toward.</p>

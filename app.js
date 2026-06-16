@@ -36,6 +36,7 @@ const els = {
   refreshButton: document.querySelector("#refreshButton"),
   updatedText: document.querySelector("#updatedText"),
   windLabel: document.querySelector("#windLabel"),
+  windDirectionDetail: document.querySelector("#windDirectionDetail"),
   windValue: document.querySelector("#windValue"),
   gustValue: document.querySelector("#gustValue"),
   tempValue: document.querySelector("#tempValue"),
@@ -90,19 +91,26 @@ function classifyWind(windFrom, speed) {
   const outComponent = speed * Math.cos((diffFromCenter * Math.PI) / 180);
   const crossComponent = speed * Math.sin((diffFromCenter * Math.PI) / 180);
 
-  let label;
+  let headline;
+  let detail;
+
   if (outComponent >= 2) {
-    label = "Out to CF";
+    headline = "Blowing Out";
+    detail = "Toward center field";
   } else if (outComponent <= -2) {
-    label = "Blowing In";
+    headline = "Blowing In";
+    detail = "Toward home plate";
   } else if (crossComponent > 0) {
-    label = "Left to Right";
+    headline = "Left to Right";
+    detail = "Across the field";
   } else {
-    label = "Right to Left";
+    headline = "Right to Left";
+    detail = "Across the field";
   }
 
   return {
-    label,
+    headline,
+    detail,
     windTo,
     outComponent,
     crossComponent
@@ -162,7 +170,8 @@ function renderCurrent(current) {
   const conditions = weatherCodeText[current.weather_code] || "Current conditions";
   const classification = classifyWind(direction, speed);
 
-  els.windLabel.textContent = classification.label;
+  els.windLabel.textContent = classification.headline;
+  els.windDirectionDetail.textContent = classification.detail;
   els.windValue.textContent = `${Math.round(speed)} mph`;
   els.gustValue.textContent = `${Math.round(gusts)} mph`;
   els.tempValue.textContent = `${temp}°`;
@@ -273,6 +282,7 @@ async function loadWeather() {
     console.error(error);
     els.updatedText.textContent = "Unable to load weather";
     els.windLabel.textContent = "Try again";
+  els.windDirectionDetail.textContent = "Unable to read wind direction";
     els.windValue.textContent = "--";
     els.gustValue.textContent = "--";
     els.tempValue.textContent = "--";

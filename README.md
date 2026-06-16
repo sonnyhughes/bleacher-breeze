@@ -113,3 +113,40 @@ This version keeps the same larger thin SVG arrow, but uses a lighter champagne-
 ## Heavier lighter gold arrow
 
 This version keeps the lighter champagne-gold arrow, but adds a little more weight so it reads more clearly over the field image.
+
+
+## Shorter shaft, bigger overall arrow
+
+This version shortens the arrow shaft by about 25% while making the arrow feel larger overall with a heavier stroke and a bigger arrowhead.
+
+
+## Current card layout
+
+The wind direction headline now sits above the Wrigley image, while the updated time and refresh button sit below the metrics cards.
+
+
+## Friendly wind direction copy
+
+The main wind readout now uses a friendlier two-line format:
+
+- **Blowing Out** / Toward center field
+- **Blowing In** / Toward home plate
+- **Left to Right** / Across the field
+- **Right to Left** / Across the field
+
+The headline above the Wrigley image is left-aligned in landscape layouts, and the arrow neck now connects cleanly into the arrowhead.
+
+
+## Landscape layout swap
+
+On wider screens, the wind headline and Wrigley map now appear on the left, while the metrics cards and refresh controls appear on the right.
+
+
+## Portrait order fix
+
+On portrait / narrow screens, the current card now flows in this order:
+1. hero and map
+2. metrics cards
+3. updated time and refresh button
+
+On wider landscape layouts, the map remains on the left and the metrics remain on the right.

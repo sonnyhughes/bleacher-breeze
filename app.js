@@ -240,7 +240,7 @@ function formatUpdated(date = new Date()) {
 }
 
 function setArrow(windTo) {
-  els.windArrow.setAttribute("transform", `translate(724 543) rotate(${windTo})`);
+  els.windArrow.setAttribute("transform", `translate(724 543) rotate(${windTo}) scale(1.5 1.25)`);
 }
 
 function renderCurrent(current) {

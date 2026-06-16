@@ -6,6 +6,10 @@ const WRIGLEY = {
 
 const REFRESH_INTERVAL_MS = 10 * 60 * 1000;
 
+// Fan-facing estimate: roughly 5 mph of wind behind a fly ball can add about 19 feet.
+// 19 / 5 = 3.8 feet per 1 mph of carry wind.
+const FEET_PER_MPH_CARRY = 3.8;
+
 const weatherCodeText = {
   0: "Clear",
   1: "Mostly clear",
@@ -105,18 +109,26 @@ function classifyWind(windFrom, speed) {
   };
 }
 
+function estimatedFeet(component) {
+  return Math.round(component * FEET_PER_MPH_CARRY);
+}
+
 function summarizeCarry(outComponent) {
-  const magnitude = Math.abs(round(outComponent, 1));
-  if (magnitude < 1) return "Carry: neutral";
-  if (outComponent > 0) return `Carry: +${magnitude} mph to CF`;
-  return `Carry: −${magnitude} mph in from CF`;
+  const feet = estimatedFeet(outComponent);
+  const absFeet = Math.abs(feet);
+
+  if (absFeet < 3) return "Neutral";
+  if (feet > 0) return `+${absFeet} ft`;
+  return `−${absFeet} ft`;
 }
 
 function summarizeCross(crossComponent) {
-  const magnitude = Math.abs(round(crossComponent, 1));
-  if (magnitude < 1) return "Crosswind: minimal";
+  const feet = estimatedFeet(crossComponent);
+  const absFeet = Math.abs(feet);
+
+  if (absFeet < 3) return "Minimal";
   const dir = crossComponent > 0 ? "L → R" : "R → L";
-  return `Crosswind: ${magnitude} mph ${dir}`;
+  return `~${absFeet} ft ${dir}`;
 }
 
 function formatTime(isoString, withMinutes = false) {
@@ -261,8 +273,8 @@ async function loadWeather() {
     els.gustValue.textContent = "--";
     els.tempValue.textContent = "--";
     els.conditionsValue.textContent = "--";
-    els.carryBadge.textContent = "Carry --";
-    els.crossBadge.textContent = "Crosswind --";
+    els.carryBadge.textContent = "--";
+    els.crossBadge.textContent = "--";
     els.tempChart.innerHTML = "";
     els.speedChart.innerHTML = "";
     els.gustChart.innerHTML = "";

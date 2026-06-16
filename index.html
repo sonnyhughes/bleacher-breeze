@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Bleacher Breeze</title>
   <meta name="description" content="Current and hourly wind direction at Wrigley Field." />
+  <link rel="icon" type="image/png" href="./favicon.png" />
+  <link rel="apple-touch-icon" href="./favicon.png" />
   <link rel="stylesheet" href="./styles.css" />
 </head>
 <body>
@@ -19,7 +21,10 @@
 
     <section class="current-card" aria-live="polite">
       <div class="current-topline">
-        <p id="updatedText" class="updated">Loading weather…</p>
+        <div>
+          <p id="updatedText" class="updated">Loading weather…</p>
+          <p class="auto-note">Auto-updates every 10 minutes</p>
+        </div>
         <button id="refreshButton" class="button" type="button">Refresh</button>
       </div>
 
@@ -27,7 +32,18 @@
         <div class="status-block">
           <h2 id="windLabel">Checking wind</h2>
 
-          <div class="stat-grid" aria-label="Current weather details">
+          <div class="stat-grid priority-stats" aria-label="Estimated batted-ball impact">
+            <article class="stat-chip stat-chip-primary">
+              <p class="stat-label">Carry</p>
+              <p id="carryBadge" class="stat-value stat-value-impact">--</p>
+            </article>
+            <article class="stat-chip stat-chip-primary">
+              <p class="stat-label">Side drift</p>
+              <p id="crossBadge" class="stat-value stat-value-impact">--</p>
+            </article>
+          </div>
+
+          <div class="stat-grid secondary-stats" aria-label="Current weather details">
             <article class="stat-chip">
               <p class="stat-label">Wind</p>
               <p id="windValue" class="stat-value">--</p>
@@ -44,11 +60,6 @@
               <p class="stat-label">Sky</p>
               <p id="conditionsValue" class="stat-value stat-value-small">--</p>
             </article>
-          </div>
-
-          <div class="note-row" aria-label="Wind breakdown">
-            <p id="carryBadge" class="note-pill">Carry --</p>
-            <p id="crossBadge" class="note-pill">Crosswind --</p>
           </div>
         </div>
 

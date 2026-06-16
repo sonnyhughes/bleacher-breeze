@@ -47,3 +47,32 @@ centerFieldBearing: 50
 ```
 
 That value controls how the app decides whether the wind is blowing out to center field or in from center field.
+
+
+## Estimated feet
+
+This version keeps the last working weather-loading code and only updates the carry / crosswind labels to estimated feet.
+
+The app uses this simple fan-facing rule of thumb:
+
+```js
+const FEET_PER_MPH_CARRY = 3.8;
+```
+
+That means:
+- `Carry: +23 ft` means the wind may add roughly 23 feet to a well-hit fly ball toward center field.
+- `Carry: −23 ft` means the wind may knock off roughly 23 feet.
+- `Side drift: ~10 ft R → L` means the wind may push the ball sideways about 10 feet from right to left.
+
+This is intentionally approximate. Actual batted-ball distance depends on exit velocity, launch angle, spin, spray angle, temperature, humidity, air density, and how wind behaves above the field.
+
+
+## Auto-refresh
+
+The page auto-updates every 10 minutes using:
+
+```js
+setInterval(loadWeather, REFRESH_INTERVAL_MS);
+```
+
+The refresh button remains available for manual updates.
